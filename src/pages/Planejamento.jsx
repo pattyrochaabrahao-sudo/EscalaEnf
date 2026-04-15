@@ -403,7 +403,7 @@ export default function Planejamento() {
   const { user, filtroGlobalSetor } = useAuth();
   const unidadeLogada = user?.unidadeLogada || "";
   
-  // Normalização agressiva dos perfis do usuário
+  // Lógica de acessos blindada sem alterar layout
   const userRoles = [user?.role, user?.perfil_secundario]
     .filter(Boolean)
     .map(r => String(r).trim().toLowerCase());
@@ -490,131 +490,109 @@ export default function Planejamento() {
     return userRoles.some(role => modulo.allowedRoles.includes(role));
   });
 
-  return (
-    <div className="flex flex-col gap-4">
-      {/* 🚨 PAINEL DE DIAGNÓSTICO FORÇADO 🚨 */}
-      <div className="bg-rose-600 text-white p-4 rounded-2xl shadow-lg border-2 border-rose-400 animate-pulse">
-        <h2 className="font-black text-lg mb-2 flex items-center gap-2"><AlertTriangle size={20}/> DIAGNÓSTICO DE ACESSOS</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
-          <div className="bg-rose-900/50 p-2 rounded border border-rose-400">
-            <p className="text-rose-200 mb-1 font-bold uppercase">Dados do Usuário:</p>
-            <pre>{JSON.stringify({ 
-              role: user?.role, 
-              perfil_sec: user?.perfil_secundario,
-              roles_limpas: userRoles,
-              matricula: user?.matricula 
-            }, null, 2)}</pre>
-          </div>
-          <div className="bg-rose-900/50 p-2 rounded border border-rose-400">
-            <p className="text-rose-200 mb-1 font-bold uppercase">Status dos Módulos:</p>
-            <p>Total Módulos: {TODOS_MODULOS.length}</p>
-            <p>Módulos Liberados: {botoes.length}</p>
-            <p>Página Atual: {pagina}</p>
-            <p className="mt-2 text-rose-200">Tentou liberar: {botoes.map(b => b.id).join(', ')}</p>
-          </div>
-        </div>
-        <p className="mt-3 text-[10px] opacity-80 text-center italic">Se você não vê os botões abaixo do painel vermelho, tire um print desta tela e me envie.</p>
-      </div>
-
-      {(loadingAuth || loadingDados) ? (
+  if (loadingAuth || loadingDados) {
+    return (
+      <div className="flex flex-col gap-4">
         <div className="bg-white p-12 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center justify-center min-h-[400px]">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-600 border-t-transparent mb-4"></div>
-          <p className="text-slate-500 font-medium">Sincronizando EscalaEnf...</p>
+          <p className="text-slate-500 font-medium">Carregando EscalaEnf...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      {botoes.length === 0 ? (
+        <div className="bg-amber-50 border border-amber-200 p-6 rounded-2xl text-center">
+          <AlertTriangle className="mx-auto text-amber-500 mb-2" size={32}/>
+          <h3 className="font-bold text-amber-800">Nenhum módulo liberado</h3>
+          <p className="text-amber-700 text-sm">O seu perfil (<strong>{user?.role}</strong>) não possui permissões configuradas.</p>
         </div>
       ) : (
-        <>
-          {botoes.length === 0 ? (
-            <div className="bg-amber-50 border border-amber-200 p-6 rounded-2xl text-center">
-              <AlertTriangle className="mx-auto text-amber-500 mb-2" size={32}/>
-              <h3 className="font-bold text-amber-800">Nenhum módulo liberado</h3>
-              <p className="text-amber-700 text-sm">O seu perfil (<strong>{user?.role}</strong>) não possui permissões configuradas.</p>
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2 bg-white p-3 rounded-2xl shadow-sm border border-slate-200">
-              {botoes.map(btn => (
-                <button key={btn.id} onClick={() => setPagina(btn.id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 ${
-                    pagina === btn.id ? "bg-indigo-600 text-white shadow-md shadow-indigo-200" : "bg-transparent text-slate-600 hover:bg-slate-100"
-                  }`}>
-                  {btn.icon} {btn.label}
-                </button>
-              ))}
-            </div>
-          )}
-
-          <div className="min-h-[600px]">
-            {pagina === "meu_painel" && (
-              <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center">
-                <h2 className="text-xl font-bold text-slate-800 mb-2">Bem-vindo ao Meu Painel</h2>
-                <p className="text-slate-500">Módulo central para visualização de escalas pessoais e avisos.</p>
-              </div>
-            )}
-            
-            {pagina === "escala_nominal" && (
-              <FazerEscala
-                colaboradores={colaboradores} setColaboradores={setColaboradores}
-                escalaNominal={escalaNominal} setEscalaNominal={setEscalaNominal}
-                ausencias={ausencias} unidadeLogada={unidadeLogada}
-              />
-            )}
-
-            {pagina === "plantao_diario" && (
-              <div className="p-10 text-center bg-white rounded-2xl border border-slate-200">
-                <Clock className="mx-auto text-slate-300 mb-4" size={48}/>
-                <h2 className="text-xl font-bold text-slate-800">Plantão Diário</h2>
-                <p className="text-slate-500">Gestão das atividades e intercorrências do dia.</p>
-              </div>
-            )}
-
-            {pagina === "planejamento_diario" && (
-              <div className="p-10 text-center bg-white rounded-2xl border border-slate-200">
-                <Calendar className="mx-auto text-slate-300 mb-4" size={48}/>
-                <h2 className="text-xl font-bold text-slate-800">Planejamento Diário</h2>
-                <p className="text-slate-500">Alocação detalhada por turno e setor.</p>
-              </div>
-            )}
-
-            {pagina === "escala" && <PlanejamentoQuantPage />}
-            {pagina === "ausencias" && <AusenciasPage />}
-            {pagina === "setores" && <SetoresConfigPage />}
-            {pagina === "gestao_colab" && <GestaoColabPage />}
-            {pagina === "remanejamento" && <RemanejamentoTab />}
-            {pagina === "relatorio" && <RelatorioGerencial colaboradores={colaboradores} unidadeLogada={unidadeLogada} />}
-            
-            {pagina === "visao_estrategica" && (
-              <div className="p-10 text-center bg-white rounded-2xl border border-slate-200">
-                <Eye className="mx-auto text-slate-300 mb-4" size={48}/>
-                <h2 className="text-xl font-bold text-slate-800">Visão Estratégica</h2>
-                <p className="text-slate-500">Análise de indicadores e metas de longo prazo.</p>
-              </div>
-            )}
-
-            {pagina === "auditoria_escalas" && (
-              <div className="p-10 text-center bg-white rounded-2xl border border-slate-200">
-                <ShieldCheck className="mx-auto text-slate-300 mb-4" size={48}/>
-                <h2 className="text-xl font-bold text-slate-800">Auditoria de Escalas</h2>
-                <p className="text-slate-500">Validação de conformidade e regras de escalas.</p>
-              </div>
-            )}
-
-            {pagina === "config_dimensionamento" && (
-              <div className="p-10 text-center bg-white rounded-2xl border border-slate-200">
-                <Ruler className="mx-auto text-slate-300 mb-4" size={48}/>
-                <h2 className="text-xl font-bold text-slate-800">Config. Dimensionamento</h2>
-                <p className="text-slate-500">Definição de parâmetros de pessoal por unidade.</p>
-              </div>
-            )}
-
-            {pagina === "dashboard_global" && (
-              <div className="p-10 text-center bg-white rounded-2xl border border-slate-200">
-                <LayoutDashboard className="mx-auto text-slate-300 mb-4" size={48}/>
-                <h2 className="text-xl font-bold text-slate-800">Dashboard Global</h2>
-                <p className="text-slate-500">Visão consolidada de todas as unidades do hospital.</p>
-              </div>
-            )}
-          </div>
-        </>
+        <div className="flex flex-wrap gap-2 bg-white p-3 rounded-2xl shadow-sm border border-slate-200">
+          {botoes.map(btn => (
+            <button key={btn.id} onClick={() => setPagina(btn.id)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 ${
+                pagina === btn.id ? "bg-indigo-600 text-white shadow-md shadow-indigo-200" : "bg-transparent text-slate-600 hover:bg-slate-100"
+              }`}>
+              {btn.icon} {btn.label}
+            </button>
+          ))}
+        </div>
       )}
+
+      <div className="min-h-[600px]">
+        {pagina === "meu_painel" && (
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center">
+            <h2 className="text-xl font-bold text-slate-800 mb-2">Bem-vindo ao Meu Painel</h2>
+            <p className="text-slate-500">Módulo central para visualização de escalas pessoais e avisos.</p>
+          </div>
+        )}
+        
+        {pagina === "escala_nominal" && (
+          <FazerEscala
+            colaboradores={colaboradores} setColaboradores={setColaboradores}
+            escalaNominal={escalaNominal} setEscalaNominal={setEscalaNominal}
+            ausencias={ausencias} unidadeLogada={unidadeLogada}
+          />
+        )}
+
+        {pagina === "plantao_diario" && (
+          <div className="p-10 text-center bg-white rounded-2xl border border-slate-200">
+            <Clock className="mx-auto text-slate-300 mb-4" size={48}/>
+            <h2 className="text-xl font-bold text-slate-800">Plantão Diário</h2>
+            <p className="text-slate-500">Gestão das atividades e intercorrências do dia.</p>
+          </div>
+        )}
+
+        {pagina === "planejamento_diario" && (
+          <div className="p-10 text-center bg-white rounded-2xl border border-slate-200">
+            <Calendar className="mx-auto text-slate-300 mb-4" size={48}/>
+            <h2 className="text-xl font-bold text-slate-800">Planejamento Diário</h2>
+            <p className="text-slate-500">Alocação detalhada por turno e setor.</p>
+          </div>
+        )}
+
+        {pagina === "escala" && <PlanejamentoQuantPage />}
+        {pagina === "ausencias" && <AusenciasPage />}
+        {pagina === "setores" && <SetoresConfigPage />}
+        {pagina === "gestao_colab" && <GestaoColabPage />}
+        {pagina === "remanejamento" && <RemanejamentoTab />}
+        {pagina === "relatorio" && <RelatorioGerencial colaboradores={colaboradores} unidadeLogada={unidadeLogada} />}
+        
+        {pagina === "visao_estrategica" && (
+          <div className="p-10 text-center bg-white rounded-2xl border border-slate-200">
+            <Eye className="mx-auto text-slate-300 mb-4" size={48}/>
+            <h2 className="text-xl font-bold text-slate-800">Visão Estratégica</h2>
+            <p className="text-slate-500">Análise de indicadores e metas de longo prazo.</p>
+          </div>
+        )}
+
+        {pagina === "auditoria_escalas" && (
+          <div className="p-10 text-center bg-white rounded-2xl border border-slate-200">
+            <ShieldCheck className="mx-auto text-slate-300 mb-4" size={48}/>
+            <h2 className="text-xl font-bold text-slate-800">Auditoria de Escalas</h2>
+            <p className="text-slate-500">Validação de conformidade e regras de escalas.</p>
+          </div>
+        )}
+
+        {pagina === "config_dimensionamento" && (
+          <div className="p-10 text-center bg-white rounded-2xl border border-slate-200">
+            <Ruler className="mx-auto text-slate-300 mb-4" size={48}/>
+            <h2 className="text-xl font-bold text-slate-800">Config. Dimensionamento</h2>
+            <p className="text-slate-500">Definição de parâmetros de pessoal por unidade.</p>
+          </div>
+        )}
+
+        {pagina === "dashboard_global" && (
+          <div className="p-10 text-center bg-white rounded-2xl border border-slate-200">
+            <LayoutDashboard className="mx-auto text-slate-300 mb-4" size={48}/>
+            <h2 className="text-xl font-bold text-slate-800">Dashboard Global</h2>
+            <p className="text-slate-500">Visão consolidada de todas as unidades do hospital.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
