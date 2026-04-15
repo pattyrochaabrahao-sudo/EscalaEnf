@@ -30,62 +30,78 @@ export const AuthProvider = ({ children }) => {
 
   const loadUserProfile = async (currentSession) => {
     if (!currentSession?.user) {
+      console.log("Sem sessão de usuário ativa.");
       setUser(null);
       setSession(null);
       setLoading(false);
       return;
     }
 
+    console.log("Iniciando carregamento de perfil para UUID:", currentSession.user.id);
+
     try {
-      // 1. Busca perfil base na tabela usuarios_perfis usando o ID do Auth
+      // 1. Busca perfil base na tabela usuarios_perfis
       const { data: perfilData, error: perfilError } = await supabase
         .from('usuarios_perfis')
         .select('*')
         .eq('id', currentSession.user.id)
         .maybeSingle();
 
-      if (perfilError) throw perfilError;
+      if (perfilError) {
+        console.error("Erro ao buscar em usuarios_perfis:", perfilError);
+      }
+
+      console.log("Dados brutos de perfil encontrados:", perfilData);
+
+      // Normalização de chaves (Maiúsculas/Minúsculas)
+      const matriculaRaw = perfilData?.matricula || perfilData?.Matricula || null;
+      const matricula = matriculaRaw ? String(matriculaRaw) : null;
+      const rolePrincipal = perfilData?.role || perfilData?.Role || 'Colaborador';
+      const perfilSecundario = perfilData?.perfil_secundario || perfilData?.Perfil_Secundario || '';
 
       let nomeReal = currentSession.user.email;
-      let cargoReal = 'Colaborador';
-      
-      const matricula = perfilData?.matricula ? String(perfilData.matricula) : null;
-      const rolePrincipal = perfilData?.role || 'Colaborador';
-      const perfilSecundario = perfilData?.perfil_secundario || '';
+      let cargoReal = rolePrincipal;
 
-      // 2. Busca dados do colaborador usando a matrícula (Chave Universal)
+      // 2. Busca dados do colaborador usando a matrícula
       if (matricula) {
+        console.log("Buscando colaborador para matrícula:", matricula);
         const { data: colabData, error: colabError } = await supabase
           .from('colaboradores')
-          .select('nome_completo, cargo')
+          .select('*')
           .eq('matricula', matricula) 
           .maybeSingle();
           
         if (!colabError && colabData) {
-          nomeReal = colabData.nome_completo || nomeReal;
-          cargoReal = colabData.cargo || cargoReal;
+          console.log("Dados do colaborador encontrados:", colabData);
+          nomeReal = colabData.nome_completo || colabData.Nome_Completo || nomeReal;
+          cargoReal = colabData.cargo || colabData.Cargo || cargoReal;
+        } else {
+          console.warn("Aviso: Matrícula encontrada no perfil mas não na tabela colaboradores.");
         }
       }
 
-      // 3. Busca setores onde a matrícula é chefe ou diretor (Lógica de Cobertura)
+      // 3. Busca setores (Lógica de Cobertura)
       let setoresArray = [];
       let setoresDetalhesArray = [];
 
       if (matricula) {
         const { data: setoresData, error: setoresError } = await supabase
           .from('setores_unidades')
-          .select('*')
-          .or(`matricula_chefe.eq.${matricula},matricula_diretor.eq.${matricula}`)
-          .eq('status', 'ativo');
+          .select('*');
 
         if (!setoresError && setoresData) {
-          setoresDetalhesArray = setoresData;
-          setoresArray = setoresData.map(s => s.nome_oficial);
+          setoresDetalhesArray = setoresData.filter(s => {
+            const matChefe = String(s.matricula_chefe || s.Matricula_Chefe || '').trim();
+            const matDiretor = String(s.matricula_diretor || s.Matricula_Diretor || '').trim();
+            const status = String(s.status || s.Status || '').toUpperCase();
+            
+            return (status === 'ATIVO') && (matChefe === matricula || matDiretor === matricula);
+          });
+          setoresArray = setoresDetalhesArray.map(s => s.nome_oficial || s.Nome_Oficial);
         }
       }
 
-      // Monta o objeto de usuário final conforme o Dossiê
-      setUser({
+      const finalUser = {
         ...currentSession.user,
         matricula: matricula,
         nome: nomeReal,
@@ -95,13 +111,19 @@ export const AuthProvider = ({ children }) => {
         perfis: [rolePrincipal, perfilSecundario].filter(Boolean),
         setores: setoresArray,
         setores_detalhes: setoresDetalhesArray
-      });
-      
+      };
+
+      console.log("Objeto de usuário final montado:", finalUser);
+      setUser(finalUser);
       setSession(currentSession);
     } catch (error) {
-      console.error("Erro ao carregar perfil do usuário:", error);
-      // Fallback para manter a sessão ativa mesmo com erro no perfil
-      setUser(currentSession.user);
+      console.error("Erro fatal ao carregar perfil:", error);
+      setUser({
+        ...currentSession.user,
+        role: 'Colaborador',
+        perfis: ['Colaborador'],
+        nome: currentSession.user.email
+      });
     } finally {
       setLoading(false);
     }
