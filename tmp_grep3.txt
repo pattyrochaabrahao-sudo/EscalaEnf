@@ -1,0 +1,46 @@
+32: const TIPOS_L1 = TIPOS_PLANTAO.filter(t => t.row === 1 || t.row === 'all');
+33: const TIPOS_L2 = TIPOS_PLANTAO.filter(t => t.row === 2 || t.row === 'all');
+116: const historicoFiltrado = historicoEscalas.filter(h => h.mes === mesSelecionado && h.ano === anoSelecionado && h.setor === unidadeLogada);
+156: let colabsFiltrados = colaboradores; // colaboradores.filter(c => c.setor === unidadeLogada);
+158: colabsFiltrados = colabsFiltrados.filter(c => {
+160: if (filtroTurnoEscala === "Manhã"  && (t.includes("manhã")  || t.includes("diurno")))  return true;
+161: if (filtroTurnoEscala === "Tarde"  && (t.includes("tarde")  || t.includes("diurno")))  return true;
+162: if (filtroTurnoEscala === "Noite"  && (t.includes("noite")  || t.includes("noturno"))) return true;
+166: colabsFiltrados.sort((a, b) => {
+169: const eA = cargoA.includes("Enferm"), eB = cargoB.includes("Enferm");
+198: if (!hasAny && ferramentaL1 && !['F','-','DSR',''].includes(ferramentaL1)) {
+227: if (['D', 'M', 'T', 'N'].includes(nl1[colabId][dia])) {
+245: const is12h = t.includes('12') || t.includes('plantão');
+246: const isNot = t.includes('noturno');
+247: const isT   = t.includes('tarde');
+292: const ausente = v2 && !['PRD','PRN','TR-E'].includes(v2);
+308: }).filter(c => c.diff !== 0);
+445: if (contratoStr.includes('HC30')) base = 'HC30';
+446: else if (contratoStr.includes('HC35')) base = 'HC35';
+447: else if (contratoStr.includes('HC40')) base = 'HC40';
+448: else if (contratoStr.includes('FFM')) base = 'FFM40';
+453: if (turnoStr.includes('12')) {
+456: if (d1 && !['-','F','DSR'].includes(d1)) regra = 'IMPAR';
+457: else if (d2 && !['-','F','DSR'].includes(d2)) regra = 'PAR';
+713: const ausente = v2 && !['PRD','PRN','TR-E'].includes(v2);
+715: return acc + (['M','D','PRD'].includes(v1) || v2 === 'PRD' || v2 === 'TR-E' ? 1 : 0);
+728: const ausente = v2 && !['PRD','PRN','TR-E'].includes(v2);
+730: return acc + (['T','D','PRD'].includes(v1) || v2 === 'PRD' || v2 === 'TR-E' ? 1 : 0);
+743: const ausente = v2 && !['PRD','PRN','TR-E'].includes(v2);
+745: return acc + (['N','PRN'].includes(v1) || v2 === 'PRN' ? 1 : 0);
+858: {colabsFiltrados.filter(c => c.id !== trocaForm.solicitante).map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+1025: if (user?.role === "Supervisão" && filtroGlobalSetor) ausenciasVisiveis = ausenciasVisiveis.filter(a => a.setor === filtroGlobalSetor);
+1048: const setoresVisiveis = unidadeLogada ? setores.filter(s => s.nome === unidadeLogada) : setores;
+1092: let lista = colaboradores; // unidadeLogada ? colaboradores.filter(c => c.setor === unidadeLogada) : colaboradores;
+1093: // if (user?.role === "Supervisão" && filtroGlobalSetor) lista = lista.filter(c => c.setor === filtroGlobalSetor);
+1100: lista = lista.filter(c =>
+1101: ((c.nome_completo || c.nome || '').toLowerCase().includes(q)) ||
+1102: (c.matricula && String(c.matricula).toLowerCase().includes(q)) ||
+1103: ((c.categoria_profissional || c.cargo || '').toLowerCase().includes(q))
+1107: const transferenciasPendentes = colaboradores.filter(c => c.setorDestino === unidadeLogada && c.statusTransferencia === 'Pendente');
+1136: setColaboradores(prev => prev.filter(c => c.id !== colab.id));
+1348: const precisaDigitar = ['16', '17'].includes(codigo);
+1364: const precisaDigitar = ['16', '17'].includes(cod);
+1531: const remsHoje = remanejamentos.filter(r => r.dia === diaH && r.mes === (mesH - 1) && r.ano === anoH);
+1545: {colaboradores.filter(c => c.condicaoEspecial !== "Inativo").map(c => <option key={c.id} value={c.matricula}>{c.nome} ({c.cargo})</option>)}
+1556: {setores.filter(s => !colabEncontrado || s.nome !== colabEncontrado.setor).map(s => <option key={s.nome} value={s.nome}>{s.nome}</option>)}

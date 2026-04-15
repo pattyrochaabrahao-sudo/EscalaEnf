@@ -1,0 +1,58 @@
+129: if (!novagrid[c.id]) novagrid[c.id] = {};
+143: if (novagrid[c.id][d] !== code) {
+144: novagrid[c.id][d] = code;
+156: let colabsFiltrados = colaboradores.filter(c => c.setor === unidadeLogada);
+285: const v1 = gridL1[c.id]?.[dia];
+286: const v2 = gridL2[c.id]?.[dia];
+302: const feitas = calcHoras(c.id), meta = c.cargaHoraria || 0;
+319: matricula_colaborador: c.matricula,
+321: dias_escala: gridL1[c.id] || {},
+323: grid1: gridL1[c.id] || {},
+324: grid2: gridL2[c.id] || {},
+373: setColaboradores(prev => prev.map(c => c.id === id ? { ...c, cargaHoraria: parseInt(valor) || 0 } : c));
+426: c.id === feriasForm.colabId ? { ...c, motivoAfastamento: 'FE', dataInicioAfastamento: feriasForm.dataInicio, quantidadeDiasAfastamento: diasTotal } : c
+438: if (c.setor !== unidadeLogada) return c;
+448: const d1 = gridL1[c.id]?.[1];
+449: const d2 = gridL1[c.id]?.[2];
+604: const horas  = calcHoras(c.id);
+611: <Fragment key={`colab-${c.id || c.matricula || index}`}>
+616: <div className="font-bold text-slate-800 text-[11px] truncate max-w-[185px]" title={c.nome}>{c.nome}</div>
+617: <div className="text-[9px] text-slate-400 mt-0.5 truncate mb-1.5">{c.cargo}</div>
+628: <input type="number" className="w-11 text-center text-[11px] font-bold border rounded p-1 outline-none" value={meta} onChange={e => atualizaCargaHoraria(c.id, e.target.value)} />
+634: <button onClick={() => limparLinha(c.id)} className="text-[9px] text-rose-500 font-bold px-1.5 py-1 bg-rose-50 rounded border border-rose-100 mb-1 w-full uppercase">Limpar</button>
+640: const val = gridL1[c.id]?.[d];
+641: const pendingPedido = pedidosFolga?.find(p => p.colabId === c.id && p.mes === mesSelecionado && p.ano === anoSelecionado && p.dia === d && p.status === 'Pendente');
+675: const val = gridL2[c.id]?.[d];
+682: onClick={() => handleCellL2(c.id, d)}>
+706: const v1 = gridL1[c.id]?.[d], v2 = gridL2[c.id]?.[d];
+721: const v1 = gridL1[c.id]?.[d], v2 = gridL2[c.id]?.[d];
+736: const v1 = gridL1[c.id]?.[d], v2 = gridL2[c.id]?.[d];
+786: <tr key={c.id}>
+787: <td className="p-2 font-semibold">{c.nome}</td>
+826: {colabsFiltrados.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+852: {colabsFiltrados.filter(c => c.id !== trocaForm.solicitante).map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+879: {colabsFiltrados.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+910: O colaborador <b>{folgaActionModal.c.nome}</b> solicitou folga para o dia <b>{folgaActionModal.d}</b>. Como deseja proceder?
+917: const cb = {...(ng[folgaActionModal.c.id] || {})};
+919: ng[folgaActionModal.c.id] = cb;
+984: const colabEncontrado = colaboradores.find(c => c.matricula === matBusca);
+1085: let lista = unidadeLogada ? colaboradores.filter(c => c.setor === unidadeLogada) : colaboradores;
+1086: if (user?.role === "Supervisão" && filtroGlobalSetor) lista = lista.filter(c => c.setor === filtroGlobalSetor);
+1094: c.nome.toLowerCase().includes(q) ||
+1095: (c.matricula && c.matricula.toLowerCase().includes(q)) ||
+1096: (c.cargo && c.cargo.toLowerCase().includes(q))
+1100: const transferenciasPendentes = colaboradores.filter(c => c.setorDestino === unidadeLogada && c.statusTransferencia === 'Pendente');
+1104: c.id === colab.id ? { ...c, setor: unidadeLogada, setorDestino: null, statusTransferencia: null } : c
+1111: c.id === colab.id ? { ...c, setorDestino: null, statusTransferencia: 'Recusada' } : c
+1121: setColaboradores(prev => prev.map(c => c.id === colabEditando.id ? colabEditando : c));
+1129: setColaboradores(prev => prev.filter(c => c.id !== colab.id));
+1209: <tr key={c.id} className="hover:bg-slate-50">
+1210: <td className="p-4 font-mono text-slate-400">{c.matricula}</td>
+1211: <td className="p-4 font-bold text-slate-800">{c.nome}</td>
+1212: <td className="p-4 text-slate-600">{c.cargo}</td>
+1213: <td className="p-4 text-slate-600">{c.setor}</td>
+1494: const colabEncontrado = matColab ? colaboradores.find(c => c.matricula === matColab) : null;
+1538: {colaboradores.filter(c => c.condicaoEspecial !== "Inativo").map(c => <option key={c.id} value={c.matricula}>{c.nome} ({c.cargo})</option>)}
+1638: id: c.matricula || c.Matricula,
+1639: matricula: c.matricula || c.Matricula,
+1640: nome: c.nome_completo || c.Nome_Completo,

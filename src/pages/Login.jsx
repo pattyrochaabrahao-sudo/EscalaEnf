@@ -1,0 +1,122 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../supabase';
+import { Activity, Lock, Mail } from 'lucide-react';
+
+export default function Login() {
+  const navigate = useNavigate();
+  
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [erroMsg, setErroMsg] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    if (!email) return alert("Digite seu e-mail.");
+    if (!senha) return alert("Digite sua senha.");
+
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: senha,
+      });
+      
+      if (error) {
+        console.error("Erro no login:", error.message);
+        setErroMsg("E-mail ou senha incorretos.");
+        setLoading(false); // Pare o estado de carregamento, se existir
+        return; // ESTE RETURN É OBRIGATÓRIO PARA PARAR A EXECUÇÃO
+      }
+
+      if (data?.user) {
+        console.log("Login de sucesso! Aguardando propagação do estado...");
+        
+        // Aguarda um pequeno ciclo para o Contexto de Auth atualizar antes de navegar
+        setTimeout(() => {
+          navigate('/'); // Redireciona para a raiz onde o App Routes lida com o perfil
+        }, 500);
+      }
+    } catch (err) {
+       alert("Erro inesperado ao fazer login.");
+    } finally {
+       setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="bg-white max-w-md w-full rounded-3xl shadow-xl overflow-hidden border border-slate-100">
+        <div className="bg-indigo-600 p-8 text-center">
+          <div className="bg-white/20 p-4 rounded-2xl inline-block mb-4 backdrop-blur-sm">
+            <Activity size={40} className="text-white" />
+          </div>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">Escala<span className="text-indigo-200">Enf</span></h1>
+          <p className="text-indigo-100 mt-2 font-medium">Acesso Restrito</p>
+        </div>
+        
+        {erroMsg && (
+          <div className="bg-red-50 text-red-600 p-3 mx-8 mt-6 rounded-lg text-sm font-medium border border-red-100 text-center">
+            {erroMsg}
+          </div>
+        )}
+        
+        <form onSubmit={handleLogin} className="p-8 space-y-6">
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2">E-mail</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <Mail size={18} className="text-slate-400" />
+              </div>
+              <input 
+                type="email" 
+                className="w-full border border-slate-300 pl-11 p-3.5 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 font-medium transition-all" 
+                placeholder="Seu e-mail de acesso" 
+                value={email} 
+                onChange={e => setEmail(e.target.value)} 
+              />
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Senha</label>
+            <div className="relative w-full">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <Lock size={18} className="text-slate-400" />
+              </div>
+              <input 
+                type={showPassword ? 'text' : 'password'} 
+                className="w-full border border-slate-300 pl-11 pr-12 p-3.5 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 font-medium transition-all" 
+                placeholder="Sua senha" 
+                value={senha} 
+                onChange={e => setSenha(e.target.value)} 
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                title={showPassword ? "Ocultar senha" : "Ocultar senha"}
+              >
+                {showPassword ? (
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                ) : (
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                )}
+              </button>
+            </div>
+          </div>
+          
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full bg-indigo-600 text-white font-bold p-4 rounded-xl hover:bg-indigo-700 transition-all shadow-md active:scale-[0.98] disabled:opacity-50"
+          >
+            {loading ? "Autenticando..." : "Acesso ao Sistema"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900;
+  }
+}
+
+@media print {
+  @page {
+    size: landscape;
+    margin: 5mm;
+  }
+  body * {
+    visibility: hidden;
+  }
+  .impressao-escala, .impressao-escala * {
+    visibility: visible;
+  }
+  .impressao-escala {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+  }
+  .impressao-escala table {
+    width: 100% !important;
+    font-size: 8px !important;
+    table-layout: fixed;
+  }
+  .impressao-escala th, .impressao-escala td {
+    padding: 1px 2px !important;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .impressao-escala .overflow-auto {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+  .hide-on-print {
+    display: none !important;
+  }
+  ::-webkit-scrollbar {
+    display: none !important;
+  }
+}

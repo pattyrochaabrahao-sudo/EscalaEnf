@@ -1,0 +1,30 @@
+{
+  "colaboradores": [
+    {
+      "Matricula": 100000,
+      "Nome_Completo": "Eduarda Pereira Santos",
+      "Data_Nascimento": "02/03/1989",
+      "Data_Admissao": "23/10/2011",
+      "Categoria_Profissional": "Técnico de Enfermagem",
+      "Vinculo": "HC+FFM",
+      "Carga_Horaria_Semanal": 35,
+      "Carga_Horaria_Mensal": 156,
+      "Unidade_Alocacao": "CENTRO CIRÚRGICO",
+      "Turno_Padrao": "N",
+      "Condicao_Especial": "Nenhuma",
+      "Status_Atual": "Ativo"
+    }
+  ],
+  "setores": [
+    {
+      "ID_Setor": 1,
+      "Sigla_Localizacao": "04CC",
+      "nome_oficial": "ENF. RETAG EMERG CLÍNICA",
+      "Bloco_Predio": "ICHC",
+      "Diretor_Area": "Alberto Gomes",
+      "Enf_Chefe": "Juliana Rocha",
+      "Ramal": 4101,
+      "Status": "ATIVO"
+    }
+  ]
+}

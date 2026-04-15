@@ -1,0 +1,17 @@
+{
+  "colab": {
+    "Matricula": 100000,
+    "Nome_Completo": "Eduarda Pereira Santos",
+    "Data_Nascimento": "02/03/1989",
+    "Data_Admissao": "23/10/2011",
+    "Categoria_Profissional": "Técnico de Enfermagem",
+    "Vinculo": "HC+FFM",
+    "Carga_Horaria_Semanal": 35,
+    "Carga_Horaria_Mensal": 156,
+    "Unidade_Alocacao": "CENTRO CIRÚRGICO",
+    "Turno_Padrao": "N",
+    "Condicao_Especial": "Nenhuma",
+    "Status_Atual": "Ativo"
+  },
+  "erro_escala": "Could not find the table 'public.escalas_mensais' in the schema cache"
+}

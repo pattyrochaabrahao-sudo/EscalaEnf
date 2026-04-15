@@ -1,0 +1,24 @@
+32: const TIPOS_L1 = TIPOS_PLANTAO.filter(t => t.row === 1 || t.row === 'all');
+33: const TIPOS_L2 = TIPOS_PLANTAO.filter(t => t.row === 2 || t.row === 'all');
+116: const historicoFiltrado = historicoEscalas.filter(h => h.mes === mesSelecionado && h.ano === anoSelecionado && h.setor === unidadeLogada);
+156: let colabsFiltrados = colaboradores; // colaboradores.filter(c => c.setor === unidadeLogada);
+158: colabsFiltrados = colabsFiltrados.filter(c => {
+159: const t = c.turno.toLowerCase();
+166: colabsFiltrados.sort((a, b) => {
+240: const t = (colab.turno || '').toLowerCase();
+304: }).filter(c => c.diff !== 0);
+852: {colabsFiltrados.filter(c => c.id !== trocaForm.solicitante).map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+1019: if (user?.role === "Supervisão" && filtroGlobalSetor) ausenciasVisiveis = ausenciasVisiveis.filter(a => a.setor === filtroGlobalSetor);
+1042: const setoresVisiveis = unidadeLogada ? setores.filter(s => s.nome === unidadeLogada) : setores;
+1086: let lista = colaboradores; // unidadeLogada ? colaboradores.filter(c => c.setor === unidadeLogada) : colaboradores;
+1087: // if (user?.role === "Supervisão" && filtroGlobalSetor) lista = lista.filter(c => c.setor === filtroGlobalSetor);
+1093: const q = termoBusca.toLowerCase();
+1094: lista = lista.filter(c =>
+1095: c.nome.toLowerCase().includes(q) ||
+1096: (c.matricula && c.matricula.toLowerCase().includes(q)) ||
+1097: (c.cargo && c.cargo.toLowerCase().includes(q))
+1101: const transferenciasPendentes = colaboradores.filter(c => c.setorDestino === unidadeLogada && c.statusTransferencia === 'Pendente');
+1130: setColaboradores(prev => prev.filter(c => c.id !== colab.id));
+1525: const remsHoje = remanejamentos.filter(r => r.dia === diaH && r.mes === (mesH - 1) && r.ano === anoH);
+1539: {colaboradores.filter(c => c.condicaoEspecial !== "Inativo").map(c => <option key={c.id} value={c.matricula}>{c.nome} ({c.cargo})</option>)}
+1550: {setores.filter(s => !colabEncontrado || s.nome !== colabEncontrado.setor).map(s => <option key={s.nome} value={s.nome}>{s.nome}</option>)}
