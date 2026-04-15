@@ -298,7 +298,6 @@ function FazerEscala({ colaboradores, setColaboradores, escalaNominal, setEscala
           </div>
        </div>
 
-       {/* Toolbar */}
        <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 mb-6 p-4 bg-slate-50 rounded-2xl border border-slate-200">
           <div className="flex flex-col gap-1.5">
              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ferramenta L1 (Base)</label>
@@ -339,7 +338,6 @@ function FazerEscala({ colaboradores, setColaboradores, escalaNominal, setEscala
           </div>
        </div>
 
-       {/* Grid Table */}
        <div className="overflow-x-auto border border-slate-200 rounded-2xl shadow-inner bg-slate-100 p-1">
           <table className="w-full border-collapse bg-white rounded-xl overflow-hidden">
              <thead>
@@ -408,9 +406,7 @@ export default function Planejamento() {
   const userRoles = [user?.role, user?.perfil_secundario].filter(Boolean);
 
   const perfisGlobais = ['Diretor', 'Supervisão', 'Supervisão Plantonista', 'Secretaria', 'Administrador'];
-  const perfisLocais = ['Colaborador', 'Plantão Assistencial', 'Liderança 1', 'Liderança 2'];
 
-  const dataAtual = new Date();
   const [setores,        setSetores]       = useState([]);
   const [colaboradores,  setColaboradores] = useState([]);
   const [escalaNominal,  setEscalaNominal] = useState([]);
@@ -431,11 +427,6 @@ export default function Planejamento() {
     const isGlobal = userRoles.some(role => perfisGlobais.includes(role));
     const isLocalOnly = !isGlobal;
 
-    if (isLocalOnly && !unidadeLogada) {
-      setLoadingDados(false);
-      return;
-    }
-
     async function carregarDados() {
       setLoadingDados(true);
       try {
@@ -443,11 +434,6 @@ export default function Planejamento() {
         if (sData) setSetores(sData);
 
         const { data, error } = await supabase.from('colaboradores').select('*');
-
-        if (error) {
-          console.error('Erro do Supabase:', error);
-        }
-
         if (data) {
           const colaboradoresFormatados = data.map(c => ({
             matricula: c.matricula,
@@ -458,16 +444,12 @@ export default function Planejamento() {
             turno_padrao: c.turno_padrao
           }));
 
-          let listaFinal = colaboradoresFormatados.filter(c => 
-            (c.status || '').toLowerCase().includes('ativo')
-          );
-
+          let listaFinal = colaboradoresFormatados.filter(c => (c.status || '').toLowerCase().includes('ativo'));
           if (isLocalOnly) {
             listaFinal = listaFinal.filter(c => (c.unidade_alocacao || '').toUpperCase() === (unidadeLogada || '').toUpperCase());
           } else if (isGlobal && filtroGlobalSetor && filtroGlobalSetor !== 'Todos') {
             listaFinal = listaFinal.filter(c => (c.unidade_alocacao || '').toUpperCase() === (filtroGlobalSetor || '').toUpperCase());
           }
-          
           setColaboradores(listaFinal);
         }
       } catch (err) {
@@ -509,9 +491,7 @@ export default function Planejamento() {
       <div className="flex flex-col gap-4">
         <div className="bg-white p-12 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center justify-center min-h-[400px]">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-600 border-t-transparent mb-4"></div>
-          <p className="text-slate-500 font-medium">
-            {loadingAuth ? 'Validando perfil de acesso (RBAC)...' : 'Carregando dados via Supabase...'}
-          </p>
+          <p className="text-slate-500 font-medium">Carregando EscalaEnf...</p>
         </div>
       </div>
     );
@@ -530,33 +510,77 @@ export default function Planejamento() {
         ))}
       </div>
 
-      {pagina === "meu_painel" && (
-        <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center">
-          <h2 className="text-xl font-bold text-slate-800 mb-2">Bem-vindo ao Meu Painel</h2>
-          <p className="text-slate-500">Módulo central para visualização de escalas pessoais e avisos.</p>
-        </div>
-      )}
-      
-      {pagina === "escala_nominal" &&
-        <FazerEscala
-          colaboradores={colaboradores} setColaboradores={setColaboradores}
-          escalaNominal={escalaNominal} setEscalaNominal={setEscalaNominal}
-          ausencias={ausencias} unidadeLogada={unidadeLogada}
-        />
-      }
-      {pagina === "escala"       && <PlanejamentoQuantPage />}
-      {pagina === "ausencias"    && <AusenciasPage />}
-      {pagina === "setores"      && <SetoresConfigPage />}
-      {pagina === "gestao_colab" && <GestaoColabPage />}
-      {pagina === "remanejamento" && <RemanejamentoTab />}
-      {pagina === "relatorio" && <RelatorioGerencial colaboradores={colaboradores} unidadeLogada={unidadeLogada} />}
-      
-      {["plantao_diario", "planejamento_diario", "visao_estrategica", "auditoria_escalas", "config_dimensionamento", "dashboard_global"].includes(pagina) && (
-        <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center">
-          <h2 className="text-xl font-bold text-slate-800 mb-2">{TODOS_MODULOS.find(m => m.id === pagina)?.label}</h2>
-          <p className="text-slate-500">Módulo em fase de desenvolvimento.</p>
-        </div>
-      )}
+      <div className="min-h-[600px]">
+        {pagina === "meu_painel" && (
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center">
+            <h2 className="text-xl font-bold text-slate-800 mb-2">Bem-vindo ao Meu Painel</h2>
+            <p className="text-slate-500">Módulo central para visualização de escalas pessoais e avisos.</p>
+          </div>
+        )}
+        
+        {pagina === "escala_nominal" && (
+          <FazerEscala
+            colaboradores={colaboradores} setColaboradores={setColaboradores}
+            escalaNominal={escalaNominal} setEscalaNominal={setEscalaNominal}
+            ausencias={ausencias} unidadeLogada={unidadeLogada}
+          />
+        )}
+
+        {pagina === "plantao_diario" && (
+          <div className="p-10 text-center bg-white rounded-2xl border border-slate-200">
+            <Clock className="mx-auto text-slate-300 mb-4" size={48}/>
+            <h2 className="text-xl font-bold text-slate-800">Plantão Diário</h2>
+            <p className="text-slate-500">Gestão das atividades e intercorrências do dia.</p>
+          </div>
+        )}
+
+        {pagina === "planejamento_diario" && (
+          <div className="p-10 text-center bg-white rounded-2xl border border-slate-200">
+            <Calendar className="mx-auto text-slate-300 mb-4" size={48}/>
+            <h2 className="text-xl font-bold text-slate-800">Planejamento Diário</h2>
+            <p className="text-slate-500">Alocação detalhada por turno e setor.</p>
+          </div>
+        )}
+
+        {pagina === "escala" && <PlanejamentoQuantPage />}
+        {pagina === "ausencias" && <AusenciasPage />}
+        {pagina === "setores" && <SetoresConfigPage />}
+        {pagina === "gestao_colab" && <GestaoColabPage />}
+        {pagina === "remanejamento" && <RemanejamentoTab />}
+        {pagina === "relatorio" && <RelatorioGerencial colaboradores={colaboradores} unidadeLogada={unidadeLogada} />}
+        
+        {pagina === "visao_estrategica" && (
+          <div className="p-10 text-center bg-white rounded-2xl border border-slate-200">
+            <Eye className="mx-auto text-slate-300 mb-4" size={48}/>
+            <h2 className="text-xl font-bold text-slate-800">Visão Estratégica</h2>
+            <p className="text-slate-500">Análise de indicadores e metas de longo prazo.</p>
+          </div>
+        )}
+
+        {pagina === "auditoria_escalas" && (
+          <div className="p-10 text-center bg-white rounded-2xl border border-slate-200">
+            <ShieldCheck className="mx-auto text-slate-300 mb-4" size={48}/>
+            <h2 className="text-xl font-bold text-slate-800">Auditoria de Escalas</h2>
+            <p className="text-slate-500">Validação de conformidade e regras de escalas.</p>
+          </div>
+        )}
+
+        {pagina === "config_dimensionamento" && (
+          <div className="p-10 text-center bg-white rounded-2xl border border-slate-200">
+            <Ruler className="mx-auto text-slate-300 mb-4" size={48}/>
+            <h2 className="text-xl font-bold text-slate-800">Config. Dimensionamento</h2>
+            <p className="text-slate-500">Definição de parâmetros de pessoal por unidade.</p>
+          </div>
+        )}
+
+        {pagina === "dashboard_global" && (
+          <div className="p-10 text-center bg-white rounded-2xl border border-slate-200">
+            <LayoutDashboard className="mx-auto text-slate-300 mb-4" size={48}/>
+            <h2 className="text-xl font-bold text-slate-800">Dashboard Global</h2>
+            <p className="text-slate-500">Visão consolidada de todas as unidades do hospital.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
