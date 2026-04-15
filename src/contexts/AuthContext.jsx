@@ -37,76 +37,70 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
-      // 1. Busca perfil base na tabela usuarios_perfis
-      const { data: perfilData } = await supabase
+      // 1. Busca perfil base na tabela usuarios_perfis usando o ID do Auth
+      const { data: perfilData, error: perfilError } = await supabase
         .from('usuarios_perfis')
         .select('*')
         .eq('id', currentSession.user.id)
         .maybeSingle();
 
-      let nomeReal = currentSession.user.email;
-      let unidadeDoColaborador = null;
-      
-      const matriculaPerfil = perfilData?.matricula || perfilData?.Matricula;
-      const rolePerfil = perfilData?.role || perfilData?.Role || 'Colaborador';
-      const unidadePerfil = perfilData?.unidade || perfilData?.Unidade || null;
+      if (perfilError) throw perfilError;
 
-      // 2. Tenta buscar nome na tabela colaboradores
-      if (matriculaPerfil) {
-        // CORREÇÃO AQUI: Removido o .or() com Maiúsculas que causava o Erro 400 no Supabase
+      let nomeReal = currentSession.user.email;
+      let cargoReal = 'Colaborador';
+      
+      const matricula = perfilData?.matricula ? String(perfilData.matricula) : null;
+      const rolePrincipal = perfilData?.role || 'Colaborador';
+      const perfilSecundario = perfilData?.perfil_secundario || '';
+
+      // 2. Busca dados do colaborador usando a matrícula (Chave Universal)
+      if (matricula) {
         const { data: colabData, error: colabError } = await supabase
           .from('colaboradores')
-          .select('*')
-          .eq('matricula', String(matriculaPerfil)) 
+          .select('nome_completo, cargo')
+          .eq('matricula', matricula) 
           .maybeSingle();
           
         if (!colabError && colabData) {
-          nomeReal = colabData.Nome_Completo || colabData.nome || nomeReal;
-          unidadeDoColaborador = colabData.Unidade_Alocacao || colabData.unidade_alocacao || null;
-        } else {
-          console.warn("Aviso: Não foi possível buscar o nome do colaborador ou unidade. Usando email da sessão.");
+          nomeReal = colabData.nome_completo || nomeReal;
+          cargoReal = colabData.cargo || cargoReal;
         }
       }
 
-      // 3. Busca e filtra setores onde o usuário é chefe ou diretor
+      // 3. Busca setores onde a matrícula é chefe ou diretor (Lógica de Cobertura)
       let setoresArray = [];
       let setoresDetalhesArray = [];
 
-      const { data: setoresData, error: setoresError } = await supabase
-        .from('setores_unidades')
-        .select('*');
+      if (matricula) {
+        const { data: setoresData, error: setoresError } = await supabase
+          .from('setores_unidades')
+          .select('*')
+          .or(`matricula_chefe.eq.${matricula},matricula_diretor.eq.${matricula}`)
+          .eq('status', 'ativo');
 
-      if (!setoresError && setoresData) {
-        setoresDetalhesArray = setoresData.filter(setor => {
-          const status = (setor.status || setor.Status || '').toUpperCase();
-          if (status !== 'ATIVO') return false;
-
-          const nomeChefe = (setor.enf_chefe || setor.Enf_Chefe || '').toLowerCase().trim();
-          const nomeDiretor = (setor.diretor_area || setor.Diretor_Area || '').toLowerCase().trim();
-          const meuNome = nomeReal.toLowerCase().trim();
-
-          return (nomeChefe === meuNome) || (nomeDiretor === meuNome);
-        });
-
-        setoresArray = setoresDetalhesArray.map(s => s.nome_oficial || s.Nome_Oficial || s.nome_setor || s.nome);
+        if (!setoresError && setoresData) {
+          setoresDetalhesArray = setoresData;
+          setoresArray = setoresData.map(s => s.nome_oficial);
+        }
       }
 
-      // Monta o usuário final com os dados exatos do banco
+      // Monta o objeto de usuário final conforme o Dossiê
       setUser({
         ...currentSession.user,
-        role: rolePerfil,
-        perfil_secundario: perfilData?.perfil_secundario || perfilData?.Perfil_Secundario || '',
-        perfis: [rolePerfil, perfilData?.perfil_secundario || perfilData?.Perfil_Secundario].filter(Boolean),
+        matricula: matricula,
         nome: nomeReal,
-        unidadeLogada: unidadePerfil || unidadeDoColaborador,
-        matricula: matriculaPerfil || null,
+        cargo: cargoReal,
+        role: rolePrincipal,
+        perfil_secundario: perfilSecundario,
+        perfis: [rolePrincipal, perfilSecundario].filter(Boolean),
         setores: setoresArray,
         setores_detalhes: setoresDetalhesArray
       });
       
       setSession(currentSession);
     } catch (error) {
-      console.error("Erro fatal ao carregar perfil:", error);
+      console.error("Erro ao carregar perfil do usuário:", error);
+      // Fallback para manter a sessão ativa mesmo com erro no perfil
       setUser(currentSession.user);
     } finally {
       setLoading(false);
