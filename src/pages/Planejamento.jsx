@@ -403,9 +403,13 @@ export default function Planejamento() {
   const { user, filtroGlobalSetor } = useAuth();
   const unidadeLogada = user?.unidadeLogada || "";
   
-  const userRoles = [user?.role, user?.perfil_secundario].filter(Boolean);
+  // Normalização agressiva dos perfis do usuário
+  const userRoles = [user?.role, user?.perfil_secundario]
+    .filter(Boolean)
+    .map(r => String(r).trim().toLowerCase());
 
-  const perfisGlobais = ['Diretor', 'Supervisão', 'Supervisão Plantonista', 'Secretaria', 'Administrador'];
+  const perfisGlobais = ['Diretor', 'Supervisão', 'Supervisão Plantonista', 'Secretaria', 'Administrador']
+    .map(p => p.toLowerCase());
 
   const [setores,        setSetores]       = useState([]);
   const [colaboradores,  setColaboradores] = useState([]);
@@ -464,34 +468,34 @@ export default function Planejamento() {
   const [pagina, setPagina] = useState("meu_painel");
 
   const TODOS_MODULOS = [
-    { id: "meu_painel",           label: "Meu Painel",           icon: <Home size={16}/>,             allowedRoles: ['ALL'] },
-    { id: "plantao_diario",       label: "Plantão Diário",       icon: <Clock size={16}/>,            allowedRoles: ['Plantão Assistencial', 'Liderança 2', 'Liderança 1', 'Diretor'] },
-    { id: "planejamento_diario",  label: "Planejamento Diário",  icon: <Calendar size={16}/>,         allowedRoles: ['Plantão Assistencial', 'Liderança 2', 'Liderança 1', 'Diretor', 'Supervisão', 'Supervisão Plantonista'] },
-    { id: "escala_nominal",       label: "Fazer Escala",         icon: <CalendarDays size={16}/>,     allowedRoles: ['Liderança 2', 'Liderança 1', 'Diretor'] },
-    { id: "escala",               label: "Planejamento Mensal",  icon: <CalendarDays size={16}/>,     allowedRoles: ['Liderança 2', 'Liderança 1', 'Diretor'] },
-    { id: "ausencias",            label: "Ausências",            icon: <UserMinus size={16}/>,        allowedRoles: ['Liderança 2', 'Liderança 1', 'Diretor'] },
-    { id: "setores",              label: "Setores Config.",      icon: <Building size={16}/>,         allowedRoles: ['Liderança 2', 'Liderança 1', 'Diretor'] },
-    { id: "remanejamento",        label: "Remanejamento",        icon: <ArrowRightLeft size={16}/>,   allowedRoles: ['Liderança 2', 'Liderança 1', 'Diretor'] },
-    { id: "gestao_colab",         label: "Gestão de Colab.",     icon: <Users size={16}/>,            allowedRoles: ['Liderança 1', 'Secretaria'] },
-    { id: "relatorio",            label: "Relatório Gerencial",  icon: <TrendingUp size={16}/>,       allowedRoles: ['Liderança 1'] },
-    { id: "visao_estrategica",    label: "Visão Estratégica",    icon: <Eye size={16}/>,              allowedRoles: ['Diretor'] },
-    { id: "auditoria_escalas",    label: "Auditoria de Escalas", icon: <ShieldCheck size={16}/>,      allowedRoles: ['Diretor'] },
-    { id: "config_dimensionamento", label: "Config. Dimensionamento", icon: <Ruler size={16}/>,      allowedRoles: ['Diretor'] },
-    { id: "dashboard_global",     label: "Dashboard Global",     icon: <LayoutDashboard size={16}/>,  allowedRoles: ['Supervisão', 'Supervisão Plantonista'] },
+    { id: "meu_painel",           label: "Meu Painel",           icon: <Home size={16}/>,             allowedRoles: ['all'] },
+    { id: "plantao_diario",       label: "Plantão Diário",       icon: <Clock size={16}/>,            allowedRoles: ['plantão assistencial', 'liderança 2', 'liderança 1', 'diretor'] },
+    { id: "planejamento_diario",  label: "Planejamento Diário",  icon: <Calendar size={16}/>,         allowedRoles: ['plantão assistencial', 'liderança 2', 'liderança 1', 'diretor', 'supervisão', 'supervisão plantonista'] },
+    { id: "escala_nominal",       label: "Fazer Escala",         icon: <CalendarDays size={16}/>,     allowedRoles: ['liderança 2', 'liderança 1', 'diretor'] },
+    { id: "escala",               label: "Planejamento Mensal",  icon: <CalendarDays size={16}/>,     allowedRoles: ['liderança 2', 'liderança 1', 'diretor'] },
+    { id: "ausencias",            label: "Ausências",            icon: <UserMinus size={16}/>,        allowedRoles: ['liderança 2', 'liderança 1', 'diretor'] },
+    { id: "setores",              label: "Setores Config.",      icon: <Building size={16}/>,         allowedRoles: ['liderança 2', 'liderança 1', 'diretor'] },
+    { id: "remanejamento",        label: "Remanejamento",        icon: <ArrowRightLeft size={16}/>,   allowedRoles: ['liderança 2', 'liderança 1', 'diretor'] },
+    { id: "gestao_colab",         label: "Gestão de Colab.",     icon: <Users size={16}/>,            allowedRoles: ['liderança 1', 'secretaria'] },
+    { id: "relatorio",            label: "Relatório Gerencial",  icon: <TrendingUp size={16}/>,       allowedRoles: ['liderança 1'] },
+    { id: "visao_estrategica",    label: "Visão Estratégica",    icon: <Eye size={16}/>,              allowedRoles: ['diretor'] },
+    { id: "auditoria_escalas",    label: "Auditoria de Escalas", icon: <ShieldCheck size={16}/>,      allowedRoles: ['diretor'] },
+    { id: "config_dimensionamento", label: "Config. Dimensionamento", icon: <Ruler size={16}/>,      allowedRoles: ['diretor'] },
+    { id: "dashboard_global",     label: "Dashboard Global",     icon: <LayoutDashboard size={16}/>,  allowedRoles: ['supervisão', 'supervisão plantonista'] },
   ];
 
-  const botoes = TODOS_MODULOS.filter(modulo => 
-    userRoles.includes('Administrador') || 
-    modulo.allowedRoles.includes('ALL') || 
-    userRoles.some(role => modulo.allowedRoles.includes(role))
-  );
+  const botoes = TODOS_MODULOS.filter(modulo => {
+    if (userRoles.includes('administrador')) return true;
+    if (modulo.allowedRoles.includes('all')) return true;
+    return userRoles.some(role => modulo.allowedRoles.includes(role));
+  });
 
   if (loadingAuth || loadingDados) {
     return (
       <div className="flex flex-col gap-4">
         <div className="bg-white p-12 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center justify-center min-h-[400px]">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-600 border-t-transparent mb-4"></div>
-          <p className="text-slate-500 font-medium">Carregando EscalaEnf...</p>
+          <p className="text-slate-500 font-medium">Sincronizando EscalaEnf...</p>
         </div>
       </div>
     );
@@ -499,16 +503,24 @@ export default function Planejamento() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap gap-2 bg-white p-3 rounded-2xl shadow-sm border border-slate-200">
-        {botoes.map(btn => (
-          <button key={btn.id} onClick={() => setPagina(btn.id)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 ${
-              pagina === btn.id ? "bg-indigo-600 text-white shadow-md shadow-indigo-200" : "bg-transparent text-slate-600 hover:bg-slate-100"
-            }`}>
-            {btn.icon} {btn.label}
-          </button>
-        ))}
-      </div>
+      {botoes.length === 0 ? (
+        <div className="bg-amber-50 border border-amber-200 p-6 rounded-2xl text-center">
+          <AlertTriangle className="mx-auto text-amber-500 mb-2" size={32}/>
+          <h3 className="font-bold text-amber-800">Nenhum módulo liberado</h3>
+          <p className="text-amber-700 text-sm">O seu perfil (<strong>{user?.role}</strong>) não possui permissões configuradas na matriz de acessos.</p>
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-2 bg-white p-3 rounded-2xl shadow-sm border border-slate-200">
+          {botoes.map(btn => (
+            <button key={btn.id} onClick={() => setPagina(btn.id)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 ${
+                pagina === btn.id ? "bg-indigo-600 text-white shadow-md shadow-indigo-200" : "bg-transparent text-slate-600 hover:bg-slate-100"
+              }`}>
+              {btn.icon} {btn.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="min-h-[600px]">
         {pagina === "meu_painel" && (
